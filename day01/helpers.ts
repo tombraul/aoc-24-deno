@@ -1,5 +1,9 @@
 import { parse } from "@std/csv/parse";
 
+/**
+ * This function reads the input list
+ * for day one challenge and returns it as a number[][]
+ */
 export async function readInput(filePath: string): Promise<number[][]> {
     try {
         const inputFile = await Deno.readTextFile(filePath);
