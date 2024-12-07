@@ -8,20 +8,37 @@ export async function readInput(filePath: string): Promise<number[][]> {
     try {
         const inputFile = await Deno.readTextFile(filePath);
         const input = parse(inputFile, {separator: "\t"});
-        const [list1, list2] = input.reduce<[number[], number[]]>(
-            ([list1, list2], [first, second]) => {
-              list1.push(Number(first));
-              list2.push(Number(second));
-              return [list1, list2];
+        
+        // Validate input structure
+        if (!input.length || !Array.isArray(input[0])) {
+            throw new Error('Invalid input format: Expected tabulated data');
+        }
+
+        // Use more descriptive variable names and separate the transformation logic
+        return input.reduce<[number[], number[]]>(
+            (accumulator, row) => {
+                const [first, second] = row;
+                
+                // Validate row data
+                if (row.length !== 2 || isNaN(Number(first)) || isNaN(Number(second))) {
+                    throw new Error('Invalid row format: Expected two numeric values');
+                }
+
+                const [numbers1, numbers2] = accumulator;
+                numbers1.push(Number(first));
+                numbers2.push(Number(second));
+                return accumulator;
             },
-            [[], []] // Startwerte
-          );
-          return [list1, list2];
+            [[], []]
+        );
     } catch (error: unknown) {
-        if (error instanceof Error) {
-            console.error(`Could not read input file: ${error.message}`);
+        // More specific error handling
+        if (error instanceof Deno.errors.NotFound) {
+            console.error(`File not found: ${filePath}`);
+        } else if (error instanceof Error) {
+            console.error(`Error processing input file: ${error.message}`);
         } else {
-            console.error('An unknown error occurred while reading input file');
+            console.error('An unknown error occurred while processing input file');
         }
         Deno.exit(1);
     }
